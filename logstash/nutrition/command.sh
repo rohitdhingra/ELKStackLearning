@@ -1,0 +1,1 @@
+type /Users/rohitdhingra/Downloads/ELKStackLearning/logstash/nutrition/nutrition.csv | /Users/rohitdhingra/Downloads/logstash-8.17.3/bin/logstash -f /Users/rohitdhingra/Downloads/ELKStackLearning/logstash/nutrition/nutrition.conf

@@ -1,0 +1,156 @@
+#Adding new index
+PUT /products
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0
+  },
+  "mappings": {
+    "properties": {
+      "name": { "type": "text" },
+      "category": { "type": "keyword" },
+      "price": { "type": "float" },
+      "stock": { "type": "integer" }
+    }
+  }
+}
+
+
+#Inserting records
+PUT /products/_doc/1
+{
+  "name": "Laptop",
+  "category": "Electronics",
+  "price": 799.99,
+  "stock": 10
+}
+
+POST /products/_doc/2
+{
+  "name": "Smartphone",
+  "category": "Electronics",
+  "price": 499.99,
+  "stock": 25
+}
+
+POST /products/_doc/3
+{
+  "name": "Headphones",
+  "category": "Accessories",
+  "price": 99.99,
+  "stock": 50
+}
+#Fetching first record
+GET products/_doc/1
+
+#Fetching all records
+GET /products/_search
+{
+  "query": {
+    "match_all": {}
+  }
+}
+#Fetching electronics records
+GET /products/_search
+{
+  "query": {
+    "term": { "category": "Electronics" }
+  }
+}
+
+PUT /new_secure_index
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 1
+  }
+  , "mappings": {
+    "properties": {
+      "name":{"type": "text"},
+      "ssn":{"type": "text"}
+    }
+  }
+}
+
+PUT original_index
+{
+  "mappings": {
+    "properties": {
+      "name":{"type": "text"},
+      "ssn":{"type": "text"},
+      "email":{"type": "text"}
+    }
+  }
+}
+
+POST original_index/_doc/1
+{
+  "name":"Alice Johnson",
+  "ssn":"123-45-6789",
+  "email":"alice@example.com"
+}
+
+
+POST original_index/_doc/2
+{
+  "name":"Bob Smith",
+  "ssn":"987-76-54321",
+  "email":"bob@example.com"
+}
+
+PUT _ingest/pipeline/encrypt_pipeline
+{
+  "description": "Encrypt name and SSN fields",
+  "processors": [
+    {
+      "set": {
+        "description": "Set dynamic '<service>' field to 'code' value",
+        "field": "name",
+        "value": "*****"
+      }
+    }
+  ]
+}
+
+POST _reindex
+{
+  "source": {
+    "index": "original_index"
+  },
+  "dest": {
+    "index": "new_secure_index2",
+    "pipeline": "encrypt_pipeline"
+  }
+}
+
+GET live_index/_search
+
+PUT new_secure_index2/_doc/3?pipeline=encrypt_pipeline
+{
+  "name": "Charlie Davis",
+  "ssn": "555-44-3333",
+  "email": "charlie@example.com"
+}
+
+POST _aliases
+{
+  "actions": [
+    { "add": { "index": "original_index", "alias": "live_index" } },
+    { "add": { "index": "new_secure_index2", "alias": "live_index" } }
+  ]
+}
+
+POST _aliases
+{
+  "actions": [
+    { "remove": { "index": "original_index", "alias": "live_index" } },
+    { "add": { "index": "new_secure_index2", "alias": "live_index" } }
+  ]
+}
+
+DELETE /original_index
+
+GET /_cat/indices
+
+
+
